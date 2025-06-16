@@ -34,7 +34,6 @@ jobs:
       - name: Run linter
         run: pnpm run lint
 
-      # THIS IS THE CORRECTED STEP
       - name: Check formatting
         run: pnpm run format:check
 
@@ -54,7 +53,6 @@ jobs:
             package.json
             pnpm-lock.yaml
 
-  # ... (The publish job remains the same and is correct) ...
   publish:
     needs: test
     runs-on: ubuntu-latest
@@ -63,6 +61,14 @@ jobs:
       contents: write
       id-token: write
     steps:
+      # CORRECTED ORDER: Download artifacts FIRST
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+          path: .
+
+      # Now, setup can use the downloaded pnpm-lock.yaml for caching
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -73,11 +79,7 @@ jobs:
           node-version: '23.6.1'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-files
-          path: .
+
       - name: Check if version is new
         id: version-check
         run: |
