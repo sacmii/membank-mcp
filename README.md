@@ -29,14 +29,22 @@ MEMBANK_API_KEY=your-api-key  # optional
 
 ### Claude Desktop
 
-Add to your `claude_desktop_config.json`:
+See [CLAUDE_DESKTOP_CONFIG.md](./CLAUDE_DESKTOP_CONFIG.md) for detailed configuration options for different Node.js installations.
+
+**Quick start** - Find your npx path and use it:
+
+```bash
+which npx
+```
+
+Then configure Claude Desktop:
 
 ```json
 {
   "mcpServers": {
     "memflow": {
-      "command": "npx",
-      "args": ["memflow-mcp"],
+      "command": "/your/npx/path",
+      "args": ["-y", "memflow-mcp"],
       "env": {
         "MEMBANK_API_URL": "http://localhost:3000"
       }
@@ -67,6 +75,33 @@ List my recent memories
 
 - Node.js 18+
 - Memory Bank API server running
+
+## Troubleshooting
+
+### "spawn npx ENOENT" Error
+
+1. **Find your npx path**:
+   ```bash
+   which npx
+   ```
+   Use this full path in your Claude Desktop config.
+
+2. **Common paths**:
+   - asdf: `/Users/username/.asdf/shims/npx`
+   - Homebrew (Intel): `/usr/local/bin/npx`
+   - Homebrew (Apple Silicon): `/opt/homebrew/bin/npx`
+   - System: `/usr/bin/npx`
+
+3. **Test it works**:
+   ```bash
+   /your/npx/path -y memflow-mcp
+   ```
+
+### "Unexpected token" JSON Errors
+
+- Ensure `MEMBANK_API_URL` is set correctly
+- Check that your Memory Bank API is running
+- Restart Claude Desktop after config changes
 
 ## API Endpoints
 
