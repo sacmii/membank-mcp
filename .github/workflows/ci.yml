@@ -1,7 +1,5 @@
-# This single workflow handles all CI and Publishing, using versions from .tool-versions
 name: CI & Publish
 
-# Add concurrency to prevent race conditions when publishing
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -13,19 +11,23 @@ on:
     branches: [main]
 
 jobs:
-  # This job runs on all pushes and PRs to ensure code quality
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js and pnpm (from .tool-versions)
+      # CORRECTED SETUP: Use pnpm/action-setup first to install pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '9.4.0'
+
+      # Then, use setup-node to install Node.js and configure the cache for pnpm
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # Using specific versions from your .tool-versions file
           node-version: '23.6.1'
-          pnpm-version: '9.4.0'
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -42,7 +44,6 @@ jobs:
 
       - name: Test installation
         run: |
-          # Test that the built package can be executed without errors
           timeout 5s node dist/index.js || true
 
       - name: Upload build artifacts
@@ -54,42 +55,42 @@ jobs:
             package.json
             pnpm-lock.yaml
 
-  # This job runs ONLY on pushes to the main branch after the 'test' job succeeds
   publish:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-    # Set permissions for publishing to NPM and creating a GitHub Release
     permissions:
-      contents: write # To create tags and releases
-      id-token: write # To authenticate with NPM using OIDC (if configured)
+      contents: write
+      id-token: write
 
     steps:
-      - name: Setup Node.js and pnpm (from .tool-versions)
+      # CORRECTED SETUP: Repeat the same two-step process here
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '9.4.0'
+
+      - name: Setup Node.js and connect to NPM
         uses: actions/setup-node@v4
         with:
-          # Using specific versions from your .tool-versions file
           node-version: '23.6.1'
-          pnpm-version: '9.4.0'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist-files
-          path: . # Download to the root of the workspace
+          path: .
 
       - name: Check if version is new
         id: version-check
         run: |
-          # Read package name and version dynamically from package.json
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           echo "package_name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-
-          # Get the latest published version from NPM. Handles cases where the package is not yet published.
           PUBLISHED_VERSION=$(pnpm view "$PACKAGE_NAME" version 2>/dev/null || echo "0.0.0")
 
           if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
@@ -117,14 +118,4 @@ jobs:
           body: |
             ## 🚀 Released v${{ steps.version-check.outputs.current_version }}
 
-            ### Installation
-            ```bash
-            npx ${{ steps.version-check.outputs.package_name }}
-            ```
-
-            ### Global Installation
-            ```bash
-            pnpm add -g ${{ steps.version-check.outputs.package_name }}
-            ```
-          draft: false
-          prerelease: false
+            See the commit history for changes.
