@@ -17,14 +17,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-"nodemonConfig": {
-  "exec": "node --loader ts-node/esm src/index.ts",
-  "ext": "ts",
-  "ignore": [
-    "dist/",
-    "node_modules/"
-  ]
-},
+  "nodemonConfig": {
+    "exec": "node --loader ts-node/esm src/index.ts",
+    "ext": "ts",
+    "ignore": [
+      "dist/",
+      "node_modules/"
+    ]
+  },
   "packageManager": "pnpm@10.10.0",
   "devDependencies": {
     "@types/node": "^24.0.1",
