@@ -12,8 +12,8 @@ const MEMORY_END = (process.env.MEMBANK_API_URL ?? '') + '/memory';
 
 // Create your server
 const server = new McpServer({
-  name: 'membank-mcp',
-  version: '1.0.0',
+name: 'memflow-mcp',
+version: '1.0.0',
 });
 
 server.tool('addMemory', { content: z.string() }, async ({ content }) => {

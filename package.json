@@ -1,7 +1,7 @@
 {
-  "name": "membank-mcp-server",
+  "name": "memflow-mcp",
   "version": "1.0.0",
-  "description": "Memory Bank MCP Server - A Model Context Protocol server for managing persistent memory",
+  "description": "MemFlow MCP - A Model Context Protocol server for seamless memory management with intelligent search",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -16,17 +16,31 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [
+    "memflow",
     "mcp",
     "memory",
-    "bank",
+    "flow",
     "context",
     "protocol",
-    "ai"
+    "ai",
+    "claude",
+    "semantic-search",
+    "persistent-memory",
+    "llm",
+    "model-context-protocol"
   ],
   "author": "Aswin Lakshmanan",
   "license": "MIT",
+  "homepage": "https://github.com/aswinlakshmanan/memflow-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aswinlakshmanan/memflow-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aswinlakshmanan/memflow-mcp/issues"
+  },
   "bin": {
-    "membank-mcp-server": "./dist/index.js"
+    "memflow-mcp": "./dist/index.js"
   },
   "nodemonConfig": {
     "exec": "node --loader ts-node/esm src/index.ts",
