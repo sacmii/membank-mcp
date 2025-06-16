@@ -16,34 +16,26 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: '9.4.0'
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '23.6.1'
           cache: 'pnpm'
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
       - name: Run linter
         run: pnpm run lint
-
       - name: Check formatting
         run: pnpm run format:check
-
       - name: Build project
         run: pnpm run build
-
       - name: Test installation
         run: |
           timeout 5s node dist/index.js || true
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -61,14 +53,11 @@ jobs:
       contents: write
       id-token: write
     steps:
-      # CORRECTED ORDER: Download artifacts FIRST
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist-files
           path: .
-
-      # Now, setup can use the downloaded pnpm-lock.yaml for caching
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -80,6 +69,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
+      # THIS IS THE MISSING STEP
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Check if version is new
         id: version-check
         run: |
@@ -88,7 +81,6 @@ jobs:
           echo "package_name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           PUBLISHED_VERSION=$(pnpm view "$PACKAGE_NAME" version 2>/dev/null || echo "0.0.0")
-
           if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
             echo "should_publish=true" >> $GITHUB_OUTPUT
             echo "✅ Version changed: $PUBLISHED_VERSION -> $CURRENT_VERSION. Proceeding to publish."
@@ -111,5 +103,4 @@ jobs:
           release_name: Release v${{ steps.version-check.outputs.current_version }}
           body: |
             ## 🚀 Released v${{ steps.version-check.outputs.current_version }}
-
             See the commit history for changes.
