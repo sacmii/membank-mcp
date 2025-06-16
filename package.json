@@ -1,5 +1,5 @@
 {
-  "name": "@aswinlakshmanan/membank-mcp",
+  "name": "membank-mcp-server",
   "version": "1.0.0",
   "description": "Memory Bank MCP Server - A Model Context Protocol server for managing persistent memory",
   "main": "index.js",
@@ -15,11 +15,18 @@
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["mcp", "memory", "bank", "context", "protocol", "ai"],
+  "keywords": [
+    "mcp",
+    "memory",
+    "bank",
+    "context",
+    "protocol",
+    "ai"
+  ],
   "author": "Aswin Lakshmanan",
   "license": "MIT",
   "bin": {
-    "membank-mcp": "./dist/index.js"
+    "membank-mcp-server": "./dist/index.js"
   },
   "nodemonConfig": {
     "exec": "node --loader ts-node/esm src/index.ts",
