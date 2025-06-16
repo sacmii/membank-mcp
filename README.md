@@ -15,7 +15,7 @@ npx memflow-mcp
 Or install globally:
 
 ```bash
-npm install -g memflow-mcp
+pnpm add -g memflow-mcp
 ```
 
 ## Configuration
