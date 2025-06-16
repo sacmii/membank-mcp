@@ -81,12 +81,15 @@ List my recent memories
 ### "spawn npx ENOENT" Error
 
 1. **Find your npx path**:
+
    ```bash
    which npx
    ```
+
    Use this full path in your Claude Desktop config.
 
 2. **Common paths**:
+
    - asdf: `/Users/username/.asdf/shims/npx`
    - Homebrew (Intel): `/usr/local/bin/npx`
    - Homebrew (Apple Silicon): `/opt/homebrew/bin/npx`
