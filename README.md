@@ -12,18 +12,20 @@ A Model Context Protocol (MCP) server that provides seamless integration with yo
 
 ## 📋 Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - pnpm (or npm/yarn)
 - Memory Bank API running (your backend service)
 
 ## 🛠️ Installation
 
 1. **Clone or navigate to the project directory:**
+
    ```bash
    cd /Users/aswinlakshmanan/workspace/agentic/membank-mcp
    ```
 
 2. **Install dependencies:**
+
    ```bash
    pnpm install
    ```
@@ -74,40 +76,49 @@ Add this configuration to your Claude Desktop config file:
 ### Available Tools
 
 #### 1. `addMemory`
+
 Store new content in your memory bank.
 
 **Parameters:**
+
 - `content` (string, required): The content to store
 - `tags` (array of strings, optional): Tags for organization
 
 **Example:**
+
 ```
 Add this to memory: "Today I learned that TypeScript has great support for MCP servers" with tags ["learning", "typescript"]
 ```
 
 #### 2. `searchMemory`
+
 Find relevant memories using semantic search.
 
 **Parameters:**
+
 - `query` (string, required): Search query
 - `tags` (array of strings, optional): Filter by specific tags
 - `startDate` (string, optional): Filter from date (ISO format)
-- `endDate` (string, optional): Filter until date (ISO format)  
+- `endDate` (string, optional): Filter until date (ISO format)
 - `limit` (number, optional): Maximum results to return
 
 **Example:**
+
 ```
 Search my memories for "TypeScript learning" with tags ["typescript"] and limit 5 results
 ```
 
 #### 3. `listMemories`
+
 Browse all stored memories with optional filtering.
 
 **Parameters:**
+
 - `tags` (array of strings, optional): Filter by specific tags
 - `limit` (number, optional): Maximum results to return
 
 **Example:**
+
 ```
 List all my memories with tag "learning" from the last week
 ```
@@ -115,18 +126,22 @@ List all my memories with tag "learning" from the last week
 ## 🏃‍♂️ Running the Server
 
 ### Development Mode
+
 ```bash
 pnpm run dev
 ```
 
 ### Production Mode
+
 ```bash
 pnpm run build
 pnpm start
 ```
 
 ### Testing the Server
+
 You can test the server using the MCP Inspector:
+
 ```bash
 npx @modelcontextprotocol/inspector node dist/index.js
 ```
@@ -134,6 +149,7 @@ npx @modelcontextprotocol/inspector node dist/index.js
 ## 🔧 Development
 
 ### Project Structure
+
 ```
 membank-mcp/
 ├── src/
@@ -145,11 +161,13 @@ membank-mcp/
 ```
 
 ### Building
+
 ```bash
 pnpm run build
 ```
 
 ### Development Scripts
+
 - `pnpm run dev` - Run in development mode with hot reload
 - `pnpm run build` - Compile TypeScript to JavaScript
 - `pnpm start` - Run the compiled server
@@ -157,13 +175,17 @@ pnpm run build
 - `pnpm run format` - Run Prettier to format code
 
 ### Linting and Formatting
+
 This project uses ESLint for linting and Prettier for code formatting.
+
 - To run linting: `pnpm run lint`
 - To format code: `pnpm run format`
 
 ### Git Hooks (Husky)
+
 Husky is configured to run linting and formatting automatically before each commit.
 To ensure Husky hooks are installed, run:
+
 ```bash
 pnpm prepare
 ```
@@ -173,11 +195,13 @@ pnpm prepare
 ### Common Issues
 
 1. **"Failed to add memory" error**
+
    - Check if your Memory Bank API is running
    - Verify the `MEMBANK_API_URL` is correct
    - Ensure API authentication is properly configured
 
 2. **"Connection refused" error**
+
    - Make sure your Memory Bank API server is running
    - Check if the URL and port are correct
 
@@ -189,6 +213,7 @@ pnpm prepare
 ### Debug Mode
 
 To see detailed logs, run the server with:
+
 ```bash
 NODE_ENV=development node dist/index.js
 ```
@@ -204,6 +229,7 @@ Your Memory Bank API should support these endpoints:
 ### Expected Request/Response Format
 
 **Add Memory:**
+
 ```bash
 POST /api/memories
 Content-Type: application/json
@@ -215,6 +241,7 @@ Content-Type: application/json
 ```
 
 **Search/List Response:**
+
 ```json
 {
   "memories": [
@@ -244,6 +271,7 @@ MIT License - see LICENSE file for details
 ## 🆘 Support
 
 If you encounter any issues:
+
 1. Check the troubleshooting section above
 2. Verify your Memory Bank API is working correctly
 3. Check Claude Desktop logs for additional error details
