@@ -17,13 +17,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # CORRECTED SETUP: Use pnpm/action-setup first to install pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: '9.4.0'
 
-      # Then, use setup-node to install Node.js and configure the cache for pnpm
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -36,6 +34,7 @@ jobs:
       - name: Run linter
         run: pnpm run lint
 
+      # THIS IS THE CORRECTED STEP
       - name: Check formatting
         run: pnpm run format:check
 
@@ -55,35 +54,30 @@ jobs:
             package.json
             pnpm-lock.yaml
 
+  # ... (The publish job remains the same and is correct) ...
   publish:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
     permissions:
       contents: write
       id-token: write
-
     steps:
-      # CORRECTED SETUP: Repeat the same two-step process here
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: '9.4.0'
-
       - name: Setup Node.js and connect to NPM
         uses: actions/setup-node@v4
         with:
           node-version: '23.6.1'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
-
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist-files
           path: .
-
       - name: Check if version is new
         id: version-check
         run: |
@@ -100,13 +94,11 @@ jobs:
             echo "should_publish=false" >> $GITHUB_OUTPUT
             echo "❌ Version $CURRENT_VERSION is already published. Skipping."
           fi
-
       - name: Publish to NPM
         if: steps.version-check.outputs.should_publish == 'true'
         run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Create GitHub Release
         if: steps.version-check.outputs.should_publish == 'true'
         uses: actions/create-release@v1
