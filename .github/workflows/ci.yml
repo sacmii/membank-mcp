@@ -1,31 +1,32 @@
-name: CI
+# This single workflow handles all CI and Publishing, using versions from .tool-versions
+name: CI & Publish
+
+# Add concurrency to prevent race conditions when publishing
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
-  pull_request:
-    branches: [main]
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 
 jobs:
+  # This job runs on all pushes and PRs to ensure code quality
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18, 20]
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js and pnpm (from .tool-versions)
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          # Using specific versions from your .tool-versions file
+          node-version: '23.6.1'
+          pnpm-version: '9.4.0'
           cache: 'pnpm'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.10.0
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -33,7 +34,7 @@ jobs:
       - name: Run linter
         run: pnpm run lint
 
-      - name: Format check
+      - name: Check formatting
         run: pnpm run format -- --check
 
       - name: Build project
@@ -41,5 +42,89 @@ jobs:
 
       - name: Test installation
         run: |
-          # Test that the built package can be executed
+          # Test that the built package can be executed without errors
           timeout 5s node dist/index.js || true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files
+          path: |
+            dist/
+            package.json
+            pnpm-lock.yaml
+
+  # This job runs ONLY on pushes to the main branch after the 'test' job succeeds
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    # Set permissions for publishing to NPM and creating a GitHub Release
+    permissions:
+      contents: write # To create tags and releases
+      id-token: write # To authenticate with NPM using OIDC (if configured)
+
+    steps:
+      - name: Setup Node.js and pnpm (from .tool-versions)
+        uses: actions/setup-node@v4
+        with:
+          # Using specific versions from your .tool-versions file
+          node-version: '23.6.1'
+          pnpm-version: '9.4.0'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+          path: . # Download to the root of the workspace
+
+      - name: Check if version is new
+        id: version-check
+        run: |
+          # Read package name and version dynamically from package.json
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "package_name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Get the latest published version from NPM. Handles cases where the package is not yet published.
+          PUBLISHED_VERSION=$(pnpm view "$PACKAGE_NAME" version 2>/dev/null || echo "0.0.0")
+
+          if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "✅ Version changed: $PUBLISHED_VERSION -> $CURRENT_VERSION. Proceeding to publish."
+          else
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+            echo "❌ Version $CURRENT_VERSION is already published. Skipping."
+          fi
+
+      - name: Publish to NPM
+        if: steps.version-check.outputs.should_publish == 'true'
+        run: pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.version-check.outputs.should_publish == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version-check.outputs.current_version }}
+          release_name: Release v${{ steps.version-check.outputs.current_version }}
+          body: |
+            ## 🚀 Released v${{ steps.version-check.outputs.current_version }}
+
+            ### Installation
+            ```bash
+            npx ${{ steps.version-check.outputs.package_name }}
+            ```
+
+            ### Global Installation
+            ```bash
+            pnpm add -g ${{ steps.version-check.outputs.package_name }}
+            ```
+          draft: false
+          prerelease: false
