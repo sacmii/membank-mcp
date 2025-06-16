@@ -153,6 +153,20 @@ pnpm run build
 - `pnpm run dev` - Run in development mode with hot reload
 - `pnpm run build` - Compile TypeScript to JavaScript
 - `pnpm start` - Run the compiled server
+- `pnpm run lint` - Run ESLint to check for code quality issues
+- `pnpm run format` - Run Prettier to format code
+
+### Linting and Formatting
+This project uses ESLint for linting and Prettier for code formatting.
+- To run linting: `pnpm run lint`
+- To format code: `pnpm run format`
+
+### Git Hooks (Husky)
+Husky is configured to run linting and formatting automatically before each commit.
+To ensure Husky hooks are installed, run:
+```bash
+pnpm prepare
+```
 
 ## 🐛 Troubleshooting
 
